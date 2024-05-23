@@ -57,7 +57,7 @@ services:
     restart: always
     container_name: quantity-redis
     ports:
-      - "6370:6379"
+      - "6379:6379"
 
   user-redis:
     image: redis
@@ -73,22 +73,15 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     ports:
       - "2181:2181"
-      - "29092:29092"
-    healthcheck:
-      test: ["CMD-SHELL", "echo 'ruok' | nc -w 2 zookeeper 2181 | grep imok"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      
+
   kafka:
     image: confluentinc/cp-kafka
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://127.0.0.1:29092
-      KAFKA_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://kafka:29092
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://172.25.0.9:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
@@ -96,11 +89,6 @@ services:
       - zookeeper
     ports:
       - "9092:9092"
-    healthcheck:
-      test: ["CMD-SHELL", "echo 'ruok' | nc -w 2 kafka 9092 | grep imok"]
-      interval: 10s
-      timeout: 5s
-      retries: 2
 
   discovery-service:
     image: 'alreadycow/discovery-service'
@@ -113,7 +101,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 2
-
+  
   apigateway-service:
     image: 'alreadycow/apigateway-service'
     ports:
@@ -154,6 +142,7 @@ services:
     environment:
       - spring.datasource.url=jdbc:mysql://product_mysql:3306/product
       - eureka.client.serviceUrl.defaultZone=http://discovery-service:8761/eureka/
+      - kafka.bootstrap.servers=kafka:9092
     depends_on:
       - kafka
       - apigateway-service
@@ -172,6 +161,7 @@ services:
     environment:
       - spring.datasource.url=jdbc:mysql://order_mysql:3306/orders
       - eureka.client.serviceUrl.defaultZone=http://discovery-service:8761/eureka/
+      - kafka.bootstrap.servers=kafka:9092
     depends_on:
       - kafka
       - apigateway-service
@@ -191,6 +181,7 @@ services:
       - spring.datasource.url=jdbc:mysql://quantity_mysql:3306/quantity
       - spring.data.redis.host=quantity-redis
       - eureka.client.serviceUrl.defaultZone=http://discovery-service:8761/eureka/
+      - kafka.bootstrap.servers=kafka:9092
     depends_on:
       - kafka
       - apigateway-service

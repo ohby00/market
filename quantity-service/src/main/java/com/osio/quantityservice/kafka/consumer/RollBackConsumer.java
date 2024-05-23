@@ -30,7 +30,6 @@ public class RollBackConsumer {
 
         // 1. 재고 확인 및 감소
         ResponseEntity<String> decreaseResponse = quantityServiceImpl.decreaseQuantity(quantityDTO.getProductId(), quantityDTO.getQuantity());
-        kafkaTemplate.send("check-quantity-response", objectMapper.writeValueAsString(decreaseResponse));
 
         if (decreaseResponse.getStatusCode() == HttpStatus.OK) {
             // 2. 주문 생성
