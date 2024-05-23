@@ -18,7 +18,7 @@ public class PreFlightCorsConfiguration {
 
     private static final String ALLOWED_HEADERS = "x-requested-with, Authorization, Content-Type";
     private static final String ALLOWED_METHODS = "GET, PUT, POST, DELETE, OPTIONS";
-    private static final String ALLOWED_ORIGIN = "http://localhost:3000";
+    private static final String ALLOWED_ORIGIN = "http://127.0.0.1:3000";
     private static final String MAX_AGE = "3600";
 
     // true 로 설정할 경우 allowed_origin 에 '*' 을 입력할 수 없고,
