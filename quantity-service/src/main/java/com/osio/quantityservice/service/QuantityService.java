@@ -9,7 +9,7 @@ public interface QuantityService {
     ResponseEntity<String> checkQuantity(Long productId, Long orderProductQuantity, Long availableQuantity);
 
     // 재고 갑소
-    ResponseEntity<String> decreaseQuantity(QuantityDTO quantityDTO);
+    String decreaseQuantity(QuantityDTO quantityDTO);
 
     // 재고 DB 저장
     void updateQuantity(QuantityUpdateDTO quantityUpdateDTO);

@@ -16,7 +16,7 @@ public class QuantityFeignController {
     private final QuantityService quantityService;
 
     @PostMapping("/feign")
-    public ResponseEntity<String> decreaseQuantity(@RequestBody QuantityDTO quantityDTO) {
+    public String decreaseQuantity(@RequestBody QuantityDTO quantityDTO) {
         return quantityService.decreaseQuantity(quantityDTO);
     }
 }

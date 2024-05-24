@@ -1,5 +1,6 @@
 package com.osio.orderservice.service;
 
+import com.osio.orderservice.config.FeignConfig.CustomFeignClientException;
 import com.osio.orderservice.dto.*;
 import com.osio.orderservice.entity.OrderProducts;
 import com.osio.orderservice.entity.Orders;
@@ -155,42 +156,50 @@ public class OrderServiceImpl implements OrderService {
                 .quantity(orderProductQuantity.getOrderProductQuantity())
                 .build();
 
-        ResponseEntity<String> quantityResponse = quantityFeignClient.decreaseQuantity(quantityDTO).getBody();
+        try {
+            String quantityResponse = quantityFeignClient.decreaseQuantity(quantityDTO);
 
-        if (quantityResponse.getStatusCode() != HttpStatus.OK) {
-            return ResponseEntity.ok(quantityResponse.getBody());
+            if (!"OK".equals(quantityResponse)) {
+                return ResponseEntity.ok(quantityResponse);
+            }
+
+            // 현재 날짜와 시간을 가져옵니다.
+            LocalDateTime now = LocalDateTime.now();
+
+            // LocalDateTime 객체를 Timestamp 객체로 변환합니다.
+            Timestamp orderDate = Timestamp.valueOf(now);
+
+            // 주문 생성
+            Orders order = Orders.builder()
+                    .userId(userId)
+                    .productId(productId)
+                    .orderTotalPrice(product.getProductPrice() * orderProductQuantity.getOrderProductQuantity()) // 주문 총 가격 설정
+                    .orderDate(orderDate)
+                    .status(Status.PENDING) // 결제 대기 중 상태로 설정
+                    .build();
+
+            // 주문 상품 생성
+            OrderProducts orderProduct = OrderProducts.builder()
+                    .userId(userId)
+                    .productId(productId)
+                    .orderProductQuantity(orderProductQuantity.getOrderProductQuantity())
+                    .orderProductPrice(product.getProductPrice() * orderProductQuantity.getOrderProductQuantity())
+                    .orders(order)
+                    .build();
+
+            // 주문 저장
+            orderRepository.save(order);
+            orderProductRepository.save(orderProduct);
+
+            return ResponseEntity.ok("주문이 성공적으로 생성되었습니다.");
+        } catch (CustomFeignClientException e) {
+            log.error("Feign 클라이언트 오류: status={}, message={}", e.getStatus(), e.getMessage());
+            return ResponseEntity.status(e.getStatus()).body(e.getMessage());
+        } catch (Exception e) {
+            log.error("주문 생성 중 오류 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("주문 생성 중 오류가 발생했습니다.");
         }
-
-        // 현재 날짜와 시간을 가져옵니다.
-        LocalDateTime now = LocalDateTime.now();
-
-        // LocalDateTime 객체를 Timestamp 객체로 변환합니다.
-        Timestamp orderDate = Timestamp.valueOf(now);
-
-        // 주문 생성
-        Orders order = Orders.builder()
-                .userId(userId)
-                .productId(productId)
-                .orderTotalPrice(product.getProductPrice() * orderProductQuantity.getOrderProductQuantity()) // 주문 총 가격 설정
-                .orderDate(orderDate)
-                .status(Status.PENDING) // 결제 대기 중 상태로 설정
-                .build();
-
-        // 주문 상품 생성
-        OrderProducts orderProduct = OrderProducts.builder()
-                .userId(userId)
-                .productId(productId)
-                .orderProductQuantity(orderProductQuantity.getOrderProductQuantity())
-                .orderProductPrice(product.getProductPrice() * orderProductQuantity.getOrderProductQuantity())
-                .orders(order)
-                .build();
-
-        // 주문 저장
-        orderRepository.save(order);
-        orderProductRepository.save(orderProduct);
-
-        return ResponseEntity.ok("주문이 성공적으로 생성되었습니다.");
-}
+    }
 
 
 

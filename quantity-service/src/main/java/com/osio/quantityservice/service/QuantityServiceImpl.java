@@ -41,7 +41,7 @@ public class QuantityServiceImpl implements QuantityService {
 
     @Override
     // 재고 차감
-    public ResponseEntity<String> decreaseQuantity(QuantityDTO quantityDTO) {
+    public String decreaseQuantity(QuantityDTO quantityDTO) {
 
         // Redisson을 사용하여 분산 락 획득
         RLock lock = redissonClient.getLock("product_lock:" + quantityDTO.getProductId());
@@ -57,14 +57,14 @@ public class QuantityServiceImpl implements QuantityService {
 
             if (checkResponse.getStatusCode() != HttpStatus.OK) {
                 log.info("상품의 재고가 부족합니다: {}", checkResponse.getBody());
-                return ResponseEntity.ok().body("상품 재고가 부족합니다");
+                return "상품 재고가 부족합니다";
             }
 
             ResponseEntity<String> updateResponse = redisService.decreaseQuantity(quantityDTO.getProductId(), quantityDTO.getQuantity());
 
             if (updateResponse.getStatusCode() == HttpStatus.OK) {
                 log.info("차감된 재고: {}", redisService.getQuantity(quantityDTO.getProductId()));
-                return ResponseEntity.ok("재고가 성공적으로 차감되었습니다.");
+                return "OK";
             } else {
                 // 상품 정보 업데이트에 실패한 경우
                 log.error("상품 정보 업데이트에 실패했습니다.");

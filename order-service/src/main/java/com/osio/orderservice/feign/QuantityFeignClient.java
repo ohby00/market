@@ -3,7 +3,6 @@ package com.osio.orderservice.feign;
 import com.osio.orderservice.config.FeignConfig;
 import com.osio.orderservice.dto.QuantityDTO;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -11,5 +10,5 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface QuantityFeignClient {
 
     @PostMapping("/quantity/feign")
-    ResponseEntity<ResponseEntity<String>> decreaseQuantity(@RequestBody QuantityDTO quantityDTO);
+    String decreaseQuantity(@RequestBody QuantityDTO quantityDTO);
 }
