@@ -34,36 +34,36 @@ public class QuantityServiceImpl implements QuantityService {
         this.orderProducer = orderProducer;
     }
 
-    @Override
-    public Long getProductQuantity(Long productId) {
-       return redisService.getQuantity(productId);
-    }
+//    @Override
+//    public Long getProductQuantity(Long productId) {
+//       return redisService.getQuantity(productId);
+//    }
 
     @Override
     // 재고 차감
-    public ResponseEntity<String> decreaseQuantity(Long productId, Long orderProductQuantity) {
+    public ResponseEntity<String> decreaseQuantity(QuantityDTO quantityDTO) {
 
         // Redisson을 사용하여 분산 락 획득
-        RLock lock = redissonClient.getLock("product_lock:" + productId);
+        RLock lock = redissonClient.getLock("product_lock:" + quantityDTO.getProductId());
         lock.lock(); // 락 획득
         try {
             log.info("재고 차감 진입");
 
             // 레디스에서 상품의 재고 확인
-            Long availableQuantity = redisService.getQuantity(productId);
+            Long availableQuantity = redisService.getQuantity(quantityDTO.getProductId());
 
             // 상품 정보 조회
-            ResponseEntity<String> checkResponse = checkQuantity(productId, orderProductQuantity, availableQuantity);
+            ResponseEntity<String> checkResponse = checkQuantity(quantityDTO.getProductId(), quantityDTO.getQuantity(), availableQuantity);
 
             if (checkResponse.getStatusCode() != HttpStatus.OK) {
                 log.info("상품의 재고가 부족합니다: {}", checkResponse.getBody());
-                return ResponseEntity.badRequest().body("상품 재고가 부족합니다");
+                return ResponseEntity.ok().body("상품 재고가 부족합니다");
             }
 
-            ResponseEntity<String> updateResponse = redisService.decreaseQuantity(productId, orderProductQuantity);
+            ResponseEntity<String> updateResponse = redisService.decreaseQuantity(quantityDTO.getProductId(), quantityDTO.getQuantity());
 
             if (updateResponse.getStatusCode() == HttpStatus.OK) {
-                log.info("차감된 재고: {}", redisService.getQuantity(productId));
+                log.info("차감된 재고: {}", redisService.getQuantity(quantityDTO.getProductId()));
                 return ResponseEntity.ok("재고가 성공적으로 차감되었습니다.");
             } else {
                 // 상품 정보 업데이트에 실패한 경우

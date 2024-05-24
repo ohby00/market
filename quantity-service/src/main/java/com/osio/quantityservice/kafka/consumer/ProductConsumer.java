@@ -19,7 +19,7 @@ public class  ProductConsumer {
     private final OrderProducer orderProducer;
 
     // 물건 업데이트
-    @KafkaListener(topics = "quantity-update", groupId = "group-02")
+    @KafkaListener(topics = "quantity-update", groupId = "group-01")
     public void consume(String kafkaMessage) throws JsonProcessingException {
         log.info("Received kafka message: {}", kafkaMessage);
 

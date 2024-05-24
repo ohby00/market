@@ -17,6 +17,7 @@ public class QuantityDTO {
     private Long productId;
     private Long quantity;
     private Long userId;
+    private Long productPrice;
 
     @Nullable
     private Long orderId;

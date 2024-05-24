@@ -82,7 +82,8 @@ public class UserController {
             redisService.setDataExpire(emailDTO.getEmail(), randomCode, 30);
             return new ResponseEntity<>("이메일 전송 성공", HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>("이메일 전송 실패", HttpStatus.INTERNAL_SERVER_ERROR);
+            log.info("e = {} ", e.getMessage());
+            return new ResponseEntity<>("이메일 전송 실패", HttpStatus.OK);
         }
     }
 

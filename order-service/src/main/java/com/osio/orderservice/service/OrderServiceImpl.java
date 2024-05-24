@@ -148,19 +148,18 @@ public class OrderServiceImpl implements OrderService {
             return ResponseEntity.ok("상품을 찾을 수 없습니다.");
         }
 
-        Long findQuantity = quantityFeignClient.getProductQuantity(productId).getBody();
-        if (findQuantity == null) {
-            return ResponseEntity.ok("상품 수량을 가져올 수 없습니다.");
-        }
+        QuantityDTO quantityDTO = QuantityDTO.builder()
+                .userId(userId)
+                .productId(productId)
+                .productPrice(product.getProductPrice())
+                .quantity(orderProductQuantity.getOrderProductQuantity())
+                .build();
 
-        if (findQuantity == 0) {
-            return ResponseEntity.ok("주문한 재고가 0개입니다.");
-        }
+        ResponseEntity<String> quantityResponse = quantityFeignClient.decreaseQuantity(quantityDTO).getBody();
 
-        if (findQuantity < orderProductQuantity.getOrderProductQuantity()) {
-            return ResponseEntity.ok("주문 수량:" + orderProductQuantity.getOrderProductQuantity() + " 재고 수량:" + findQuantity + " 주문에 실패하셨습니다.");
+        if (quantityResponse.getStatusCode() != HttpStatus.OK) {
+            return ResponseEntity.ok(quantityResponse.getBody());
         }
-
 
         // 현재 날짜와 시간을 가져옵니다.
         LocalDateTime now = LocalDateTime.now();
@@ -190,16 +189,9 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.save(order);
         orderProductRepository.save(orderProduct);
 
-        QuantityDTO quantityDTO = QuantityDTO.builder()
-                .productId(productId)
-                .quantity(orderProductQuantity.getOrderProductQuantity())
-                .build();
-
-        // Kafka 메시지 전송
-        quantityProducer.checkQuantity(quantityDTO);
-
         return ResponseEntity.ok("주문이 성공적으로 생성되었습니다.");
-    }
+}
+
 
 
     // 결제 진입

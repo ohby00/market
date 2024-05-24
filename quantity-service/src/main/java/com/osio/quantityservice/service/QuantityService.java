@@ -1,5 +1,6 @@
 package com.osio.quantityservice.service;
 
+import com.osio.quantityservice.dto.QuantityDTO;
 import com.osio.quantityservice.dto.QuantityUpdateDTO;
 import org.springframework.http.ResponseEntity;
 
@@ -8,10 +9,10 @@ public interface QuantityService {
     ResponseEntity<String> checkQuantity(Long productId, Long orderProductQuantity, Long availableQuantity);
 
     // 재고 갑소
-    ResponseEntity<String> decreaseQuantity(Long productId, Long orderProductQuantity);
+    ResponseEntity<String> decreaseQuantity(QuantityDTO quantityDTO);
 
     // 재고 DB 저장
     void updateQuantity(QuantityUpdateDTO quantityUpdateDTO);
 
-    Long getProductQuantity(Long productId);
+//    Long getProductQuantity(Long productId);
 }
