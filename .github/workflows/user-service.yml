@@ -60,14 +60,13 @@ jobs:
         run: aws s3 cp --region ap-northeast-2 ./user-service.tar.gz s3://osio-s3/user-service/
         
         # codeDeploy 실행, 다양한 이름 설정에 주의
-      - name: deploy with AWS codeDeploy
-        run: aws deploy create-deployment
+      - name: deploy create-deployment-group
+        run: aws deploy create-deployment 
           --application-name codedeploy-user
-          --deployment-config-name CodeDeployDefault.OneAtATime
           --deployment-group-name deploy-group-user
+          --deployment-config-name CodeDeployDefault.OneAtATime
           --s3-location bucket=osio-s3,bundleType=tgz,key=user-service/user-service.tar.gz
-          --service-role-arn arn:aws:iam::123456789012:role/CodeDeployServiceRole
-
+    
       - name: MySQL 설정
         uses: mirromutth/mysql-action@v1.1
         with:
