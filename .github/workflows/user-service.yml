@@ -3,9 +3,9 @@ name: user-service
 on:
   # User브랜치에서 일어난 push/pull request에 작동한다.
   push:
-    branches: [ "user-service" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "user-service" ]
+    branches: [ "" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -67,18 +67,3 @@ jobs:
             --deployment-config-name CodeDeployDefault.AllAtOnce \
             --deployment-group-name deploy-group-user \
             --s3-location bucket=osio-s3,bundleType=tgz,key=user-service/user-service.tar.gz
-            --
-    
-      - name: MySQL 설정
-        uses: mirromutth/mysql-action@v1.1
-        with:
-          # host port: 3306 # default value is 3306. The port of host
-          # container port: 3306 # default value is 3306. The port of container
-          character set server: 'utf8' #default value is 'utf8mb4'
-          collation server: 'utf8_general_ci' # default value is 'utf8mb4_general_ci'. The '--collation-server' option for mysqld
-          mysql version: '8.0.33' # 프로젝트에 맞게 입력, Optional, default value is "latest". The version of the MySQL
-          # mysql database: 'some_test' # Optional, default value is "test". The specified database which will be create
-          mysql user: cow
-          mysql password: ${{ secrets.USER_MYSQL_PASSWORD }} # 이 항목을 작성하거나 아래 두 항목을 작성해야한다.
-          # mysql user: admin
-          # mysql password: ${{ secrets.ROOT_PASSWORD }}
