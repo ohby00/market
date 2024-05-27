@@ -61,11 +61,12 @@ jobs:
         
         # codeDeploy 실행, 다양한 이름 설정에 주의
       - name: deploy create-deployment-group
-        run: aws deploy create-deployment 
-          --application-name codedeploy-user
-          --deployment-group-name deploy-group-user
-          --deployment-config-name CodeDeployDefault.OneAtATime
-          --s3-location bucket=osio-s3,bundleType=tgz,key=user-service/user-service.tar.gz
+        run: |
+          aws deploy create-deployment \
+            --application-name codedeploy-user \
+            --deployment-config-name CodeDeployDefault.OneAtATime \
+            --deployment-group-name deploy-group-user \
+            --s3-location bucket=osio-s3,bundleType=tgz,key=user-service/user-service.tar.gz
     
       - name: MySQL 설정
         uses: mirromutth/mysql-action@v1.1
