@@ -66,6 +66,7 @@ jobs:
           --deployment-config-name CodeDeployDefault.OneAtATime
           --deployment-group-name deploy-group-user
           --s3-location bucket=osio-s3,bundleType=tgz,key=user-service/user-service.tar.gz
+          --service-role-arn arn:aws:iam::123456789012:role/CodeDeployServiceRole
 
       - name: MySQL 설정
         uses: mirromutth/mysql-action@v1.1
