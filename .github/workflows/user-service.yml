@@ -1,69 +1,40 @@
-name: user-service
+name: Deploy User Service
 
 on:
-  # User브랜치에서 일어난 push/pull request에 작동한다.
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "" ]
+    branches:
+      - main
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# This workflow contains a single job called "build"
 jobs:
-  build:
-    # machine which runner would use
+  deploy:
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-      - name: JDK 17 설치
-        uses: actions/setup-java@v4.0.0
-        with:
-          java-version: '17'
-          distribution: 'corretto'
-
-      - name: application.yml 생성
-        shell: bash
-        run: |
-          mkdir user-service/src/main/resources
-          cd user-service/src/main/resources
-          touch ./application.yml
-
-          echo "${{ secrets.USER_APPLICATIONYML }}" >> ./application.yml
-          
-      - name: Grant execute permission for gradlew
-        run: chmod +x user-service/gradlew
-      
-      - name: Build with Gradle
-        run: |
-          cd user-service
-          ./gradlew clean --stacktrace --info build
-
-      - name: archive repository #tar 명령어를 이용하여 User폴더 압축 
-        run: tar cvfz ./user-service.tar.gz user-service/*
-         
-        # github secret 이용하여 AWS설정
-      - name: AWS configure credentials
+      - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.USER_ACCESS }}
           aws-secret-access-key: ${{ secrets.USER_SECRET_ACCESS }}
           aws-region: ap-northeast-2
-          
-        # 압축파일 이름, 버켓 이름 설정에 주의
-      - name: upload to S3
-        run: aws s3 cp --region ap-northeast-2 ./user-service.tar.gz s3://osio-s3/user-service/
-        
-        # codeDeploy 실행, 다양한 이름 설정에 주의
-      - name: deploy create-deployment-group
+
+      - name: Build and push Docker image
         run: |
-          aws deploy create-deployment \
-            --application-name codedeploy-user \
-            --deployment-config-name CodeDeployDefault.AllAtOnce \
-            --deployment-group-name deploy-group-user \
-            --s3-location bucket=osio-s3,bundleType=tgz,key=user-service/user-service.tar.gz
+          docker build -t user-service .
+          docker tag user-service:latest alreadycow/user-service:latest
+          docker push alreadycow/user-service:latest
+
+      - name: SSH into EC2 instance and pull Docker image
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: 3.35.22.118
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker login -u alreadycow -p ${{ secrets.DOCKER_PASSWORD }}
+            docker pull alreadycow/user-service:latest
+            docker stop user-service || true
+            docker rm user-service || true
+            docker run -d -p 8083:8083 --name user-service alreadycow/user-service:latest
