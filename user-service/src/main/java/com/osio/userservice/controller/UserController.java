@@ -80,6 +80,7 @@ public class UserController {
             String randomCode = generateCode();
             emailService.send(emailDTO.getEmail(), "인증 코드 발송", "인증 코드: " + randomCode);
             redisService.setDataExpire(emailDTO.getEmail(), randomCode, 30);
+            log.info("이메일 전송 완료");
             return new ResponseEntity<>("이메일 전송 성공", HttpStatus.OK);
         } catch (Exception e) {
             log.info("e = {} ", e.getMessage());
