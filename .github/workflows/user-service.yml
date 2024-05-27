@@ -23,7 +23,9 @@ jobs:
         distribution: 'corretto'
 
     - name: Build with Gradle
-      run: ./gradlew build -x test
+      run: |
+        cd user-service
+        ./gradlew build -x test
 
     - name: Docker build
       run: |
