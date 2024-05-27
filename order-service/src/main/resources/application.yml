@@ -1,0 +1,31 @@
+server:
+  port: 8081
+
+spring :
+  kafka:
+    bootstrap-servers: kafka:9092
+  application:
+    name: order-service
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: cow
+    url: jdbc:mysql://order-mysql:3308/orders
+    password: 'miso0805'
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: 'true'
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
+
+eureka:
+  instance:
+    instance-id: ${spring.cloud.client.hostname}:${spring.application.instance_id:${random.value}}
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
