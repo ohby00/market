@@ -64,9 +64,10 @@ jobs:
         run: |
           aws deploy create-deployment \
             --application-name codedeploy-user \
-            --deployment-config-name CodeDeployDefault.OneAtATime \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
             --deployment-group-name deploy-group-user \
             --s3-location bucket=osio-s3,bundleType=tgz,key=user-service/user-service.tar.gz
+            --
     
       - name: MySQL 설정
         uses: mirromutth/mysql-action@v1.1
