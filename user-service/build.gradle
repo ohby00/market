@@ -15,9 +15,9 @@ repositories {
     mavenCentral()
 }
 
-ext {
-    set('springCloudVersion', "2023.0.0")
-}
+//ext {
+//    set('springCloudVersion', "2023.0.0")
+//}
 
 dependencies {
     // 공통적으로 사용하는 의존성 정의
@@ -52,7 +52,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
     // 유레카
-    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+//    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
     // 암호화
     implementation 'org.mindrot:jbcrypt:0.4'
@@ -65,11 +65,11 @@ dependencies {
 //    implementation 'org.springframework.cloud:spring-cloud-config-client'
 }
 
-dependencyManagement {
-    imports {
-        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
-    }
-}
+//dependencyManagement {
+//    imports {
+//        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+//    }
+//}
 
 tasks.named('test') {
     useJUnitPlatform()
