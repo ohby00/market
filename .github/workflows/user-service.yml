@@ -24,7 +24,7 @@ jobs:
         
     - name: make application.yml
       run: |
-        cd .user-service/src/main/resources
+        cd ./user-service/src/main/resources
         touch ./application.yml
         echo "${{ secrets.APPLICATION_USER }}" > ./application.yml
 
