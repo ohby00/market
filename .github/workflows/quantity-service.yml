@@ -22,7 +22,7 @@ jobs:
       - name: Create application.yml
         run: |
           mkdir -p ./quantity-service/src/main/resources
-          echo "${{ secrets.APPLICATION_ORDR }}" | base64 --decode > ./quantity-service/src/main/resources/application.yml
+          echo "${{ secrets.APPLICATION_QUAN }}" | base64 --decode > ./quantity-service/src/main/resources/application.yml
 
       - name: Build with Gradle
         run: |
