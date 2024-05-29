@@ -1,0 +1,121 @@
+server:
+  port: 8000
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+spring:
+  application:
+    name: apigateway-service
+  main:
+    web-application-type: reactive
+    allow-bean-definition-overriding: true
+
+
+  cloud:
+    gateway:
+      routes:
+        - id: route-to-user-POST
+          uri: lb://user-service
+          predicates:
+            - Path=/user/**
+            - Method=POST
+
+        - id: route-to-user-DELETE
+          uri: lb://user-service
+          predicates:
+            - Path=/user/**
+            - Method=DELETE
+
+        - id: route-to-user-list
+          uri: lb://user-service
+          predicates:
+            - Path=/user/list
+            - Method=GET
+          filters:
+            - AuthorizationHeaderFilter
+
+        - id: route-to-user-myPage
+          uri: lb://user-service
+          predicates:
+            - Path=/user/myPage
+            - Method=GET
+          filters:
+            - AuthorizationHeaderFilter
+
+        - id: route-to-cart-POST
+          uri: lb://order-service
+          predicates:
+            - Path=/cart/**
+            - Method=POST
+          filters:
+            - AuthorizationHeaderFilter
+
+        - id: route-to-cart-GET
+          uri: lb://order-service
+          predicates:
+            - Path=/cart/**
+            - Method=GET
+          filters:
+            - AuthorizationHeaderFilter
+
+        - id: route-to-cart-PATCH
+          uri: lb://order-service
+          predicates:
+            - Path=/cart/**
+            - Method=PATCH
+          filters:
+            - AuthorizationHeaderFilter
+
+        - id: route-to-cart-DELETE
+          uri: lb://order-service
+          predicates:
+            - Path=/cart/**
+            - Method=DELETE
+          filters:
+            - AuthorizationHeaderFilter
+
+        - id: route-to-order-POST
+          uri: lb://order-service
+          predicates:
+            - Path=/order/**
+            - Method=POST
+
+        - id: route-to-order-GET
+          uri: lb://order-service
+          predicates:
+            - Path=/order/**
+            - Method=GET
+          filters:
+            - AuthorizationHeaderFilter
+
+        - id: route-to-product-POST
+          uri: lb://product-service
+          predicates:
+            - Path=/product/**
+            - Method=POST
+          filters:
+            - AuthorizationHeaderFilter
+
+        - id: route-to-product-GET
+          uri: lb://product-service
+          predicates:
+            - Path=/product/**
+            - Method=GET
+
+        - id: route-to-quantity-GET
+          uri: lb://quantity-service
+          predicates:
+            - Path=/quantity/**
+            - Method=GET
+
+        - id: route-to-quantity-POST
+          uri: lb://quantity-service
+          predicates:
+            - Path=/quantity/**
+            - Method=POST
+
