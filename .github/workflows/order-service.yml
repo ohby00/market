@@ -2,7 +2,7 @@ name: Order Service
 
 on:
   push:
-    branches: [ "order" ]
+    branches: [ "main" ]
 
 permissions:
   contents: read
@@ -40,7 +40,7 @@ jobs:
       - name: Deploy
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.EC2_SSH_KEY }} # EC2 인스턴스 퍼블릭 DNS
+          host: ${{ secrets.EC2_SSH_KEY_ORDR }} # EC2 인스턴스 퍼블릭 DNS
           username: ${{ secrets.USERNAME }} # EC2 유저내임
           key: ${{ secrets.PRIVATE_KEY }} # pem 키
           script: |
