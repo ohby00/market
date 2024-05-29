@@ -2,7 +2,7 @@ name: Order Service
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "order" ]
 
 permissions:
   contents: read
