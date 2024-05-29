@@ -37,6 +37,7 @@ dependencies {
     // JPA
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
+    // 의심
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 
     // mysql
