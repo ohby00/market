@@ -1,7 +1,0 @@
-<<<<<<< HEAD
-# root gitignore
-docker-compose.yml
-.idea/
-=======
-docker-compose.yml
->>>>>>> parent of a349de4 (removed cached)
