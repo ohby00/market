@@ -23,8 +23,7 @@ jobs:
     - name: make application.yml
       run: |
         cd ./order-service/src/main/resources
-        touch ./application.yml
-        echo "${{ secrets.APPLICATION_ORDR }}" > ./application.yml
+        echo "${{ secrets.APPLICATION_ORDR }}" > ./order-service/src/main/resources/application.yml
 
     - name: Build with Gradle
       run: |
