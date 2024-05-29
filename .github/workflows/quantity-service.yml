@@ -1,8 +1,8 @@
-name: Order Service
+name: Quantity Service
 
 on:
   push:
-    branches: [ "order" ]
+    branches: [ "main" ]
 
 permissions:
   contents: read
@@ -21,31 +21,31 @@ jobs:
 
       - name: Create application.yml
         run: |
-          mkdir -p ./order-service/src/main/resources
-          echo "${{ secrets.APPLICATION_ORDR }}" | base64 --decode > ./order-service/src/main/resources/application.yml
-      
+          mkdir -p ./quantity-service/src/main/resources
+          echo "${{ secrets.APPLICATION_ORDR }}" | base64 --decode > ./quantity-service/src/main/resources/application.yml
+
       - name: Build with Gradle
         run: |
-          cd order-service
+          cd quantity-service
           ./gradlew build -x test
 
       - name: Docker build
         run: |
-          cd order-service
+          cd quantity-service
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -t app .
-          docker tag app ${{ secrets.DOCKER_USERNAME }}/order-service:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/order-service:latest
+          docker tag app ${{ secrets.DOCKER_USERNAME }}/quantity-service:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/quantity-service:latest
 
       - name: Deploy
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.EC2_SSH_KEY_ORDR }} # EC2 인스턴스 퍼블릭 DNS
+          host: ${{ secrets.EC2_SSH_KEY_QUAN }} # EC2 인스턴스 퍼블릭 DNS
           username: ${{ secrets.USERNAME }} # EC2 유저내임
           key: ${{ secrets.PRIVATE_KEY }} # pem 키
           script: |
-            docker pull ${{ secrets.DOCKER_USERNAME }}/order-service:latest
+            docker pull ${{ secrets.DOCKER_USERNAME }}/quantity-service:latest
             docker stop $(docker ps -a -q)
-            docker run -d --log-driver=syslog -p 8081:8081 ${{ secrets.DOCKER_USERNAME }}/order-service:latest
+            docker run -d --log-driver=syslog -p 8081:8081 ${{ secrets.DOCKER_USERNAME }}/quantity-service:latest
             docker rm $(docker ps --filter 'status=exited' -a -q)
             docker image prune -a -f
