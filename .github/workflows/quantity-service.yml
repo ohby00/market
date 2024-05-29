@@ -32,11 +32,11 @@ jobs:
 
       - name: Docker build
         run: |
-          cd order-service
+          cd quantity-service
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -t app .
-          docker tag app ${{ secrets.DOCKER_USERNAME }}/order-service:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/order-service:latest
+          docker tag app ${{ secrets.DOCKER_USERNAME }}/quantity-service:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/quantity-service:latest
 
       - name: Deploy
         uses: appleboy/ssh-action@master
