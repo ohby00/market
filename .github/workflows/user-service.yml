@@ -2,9 +2,7 @@ name: User Service
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [ "user" ]
 
 permissions:
   contents: read
@@ -15,7 +13,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
