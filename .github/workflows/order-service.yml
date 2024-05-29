@@ -22,8 +22,8 @@ jobs:
       - name: Create application.yml
         run: |
           mkdir -p ./order-service/src/main/resources
-          echo "${{ secrets.APPLICATION_ORDR }}" > ./order-service/src/main/resources/application.yml
-
+          echo "${{ secrets.APPLICATION_ORDR }}" | base64 --decode > ./order-service/src/main/resources/application.yml
+      
       - name: Build with Gradle
         run: |
           cd order-service
