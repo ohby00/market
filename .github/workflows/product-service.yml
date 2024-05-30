@@ -2,7 +2,7 @@ name: Product Service
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "product" ]
 
 permissions:
   contents: read

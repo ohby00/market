@@ -2,7 +2,7 @@ name: User Service
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "user" ]
 
 permissions:
   contents: read
