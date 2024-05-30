@@ -16,8 +16,9 @@ repositories {
 }
 
 ext {
-    set('springCloudVersion', "2023.0.0")
+    springCloudVersion = "2023.0.0"
 }
+
 
 dependencies {
     // 공통적으로 사용하는 의존성 정의
@@ -57,6 +58,7 @@ dependencies {
     // Apache Kafka
     implementation 'org.springframework.kafka:spring-kafka:3.3.2'
 }
+
 
 dependencyManagement {
     imports {
