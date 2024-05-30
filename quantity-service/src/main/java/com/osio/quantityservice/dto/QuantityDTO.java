@@ -1,14 +1,13 @@
 package com.osio.quantityservice.dto;
 
-import com.esotericsoftware.kryo.util.Null;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import javax.annotation.Nullable;
 
 @Data
 @Builder

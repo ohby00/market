@@ -1,8 +1,8 @@
-name: Quantity Service
+name: Product Service
 
 on:
   push:
-    branches: [ "quantity" ]
+    branches: [ "main" ]
 
 permissions:
   contents: read
@@ -22,31 +22,31 @@ jobs:
 
       - name: Create application.yml
         run: |
-          mkdir -p ./quantity-service/src/main/resources
-          echo "${{ secrets.APPLICATION_QUAN }}" | base64 --decode > ./quantity-service/src/main/resources/application.yml
+          mkdir -p ./product-service/src/main/resources
+          echo "${{ secrets.APPLICATION_PROD }}" | base64 --decode > ./product-service/src/main/resources/application.yml
 
       - name: Build with Gradle
         run: |
-          cd quantity-service
+          cd product-service
           ./gradlew build -x test
 
       - name: Docker build
         run: |
-          cd quantity-service
+          cd product-service
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -t app .
-          docker tag app ${{ secrets.DOCKER_USERNAME }}/quantity-service:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/quantity-service:latest
+          docker tag app ${{ secrets.DOCKER_USERNAME }}/product-service:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/product-service:latest
 
       - name: Deploy
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.EC2_SSH_KEY_QUAN }}
+          host: ${{ secrets.EC2_SSH_KEY_PROD }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
-            docker pull ${{ secrets.DOCKER_USERNAME }}/quantity-service:latest
+            docker pull ${{ secrets.DOCKER_USERNAME }}/product-service:latest
             docker stop $(docker ps -a -q)
-            docker run -d --log-driver=syslog -p 8084:8084 ${{ secrets.DOCKER_USERNAME }}/quantity-service:latest
+            docker run -d --log-driver=syslog -p 8082:8082 ${{ secrets.DOCKER_USERNAME }}/product-service:latest
             docker rm $(docker ps --filter 'status=exited' -a -q)
             docker image prune -a -f
