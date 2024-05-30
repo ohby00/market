@@ -2,7 +2,7 @@ name: Quantity Service
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "quantity" ]
 
 permissions:
   contents: read
