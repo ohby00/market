@@ -14,6 +14,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 @Service
 @Slf4j
 @Transactional
@@ -40,35 +45,38 @@ public class QuantityServiceImpl implements QuantityService {
 //    }
 
     @Override
-    // 재고 차감
-    public String decreaseQuantity(QuantityDTO quantityDTO) {
-
+// 재고 차감
+    public ResponseEntity<String> decreaseQuantity(QuantityDTO quantityDTO) {
         // Redisson을 사용하여 분산 락 획득
         RLock lock = redissonClient.getLock("product_lock:" + quantityDTO.getProductId());
         lock.lock(); // 락 획득
         try {
-            log.info("재고 차감 진입");
+            log.info("상품 ID {}의 재고 차감 진입", quantityDTO.getProductId());
 
             // 레디스에서 상품의 재고 확인
             Long availableQuantity = redisService.getQuantity(quantityDTO.getProductId());
 
-            // 상품 정보 조회
-            ResponseEntity<String> checkResponse = checkQuantity(quantityDTO.getProductId(), quantityDTO.getQuantity(), availableQuantity);
+            if (availableQuantity == null) {
+                // 상품 정보 조회에 실패한 경우
+                log.error("상품 ID {}의 정보 조회에 실패했습니다.", quantityDTO.getProductId());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("상품 정보 조회에 실패했습니다");
+            }
 
-            if (checkResponse.getStatusCode() != HttpStatus.OK) {
-                log.info("상품의 재고가 부족합니다: {}", checkResponse.getBody());
-                return "상품 재고가 부족합니다";
+            // 수량 부족 시 실패
+            if (availableQuantity == 0 || quantityDTO.getQuantity() > availableQuantity) {
+                log.info("상품 ID {}의 재고가 부족합니다", quantityDTO.getProductId());
+                return ResponseEntity.badRequest().body("상품 재고가 부족합니다");
             }
 
             ResponseEntity<String> updateResponse = redisService.decreaseQuantity(quantityDTO.getProductId(), quantityDTO.getQuantity());
 
             if (updateResponse.getStatusCode() == HttpStatus.OK) {
-                log.info("차감된 재고: {}", redisService.getQuantity(quantityDTO.getProductId()));
-                return "OK";
+                log.info("상품 ID {}의 차감된 재고: {}", quantityDTO.getProductId(), redisService.getQuantity(quantityDTO.getProductId()));
+                return ResponseEntity.ok("상품 재고가 성공적으로 차감되었습니다");
             } else {
                 // 상품 정보 업데이트에 실패한 경우
-                log.error("상품 정보 업데이트에 실패했습니다.");
-                throw new RuntimeException("재고 차감 중 오류가 발생했습니다.");
+                log.error("상품 ID {}의 정보 업데이트에 실패했습니다.", quantityDTO.getProductId());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("재고 차감 중 오류가 발생했습니다");
             }
 
         } finally {
@@ -77,20 +85,28 @@ public class QuantityServiceImpl implements QuantityService {
     }
 
 
-    public ResponseEntity<String> checkQuantity(Long productId, Long orderProductQuantity, Long availableQuantity) {
-        if (availableQuantity != null) {
-            // 수량 부족 시 실패
-            if (availableQuantity == 0 || orderProductQuantity > availableQuantity) {
-                return ResponseEntity.badRequest().body("재고 부족");
-            }
-            log.info("현재 재고 : {}", availableQuantity);
-            return ResponseEntity.ok("OK");
-        } else {
-            // 상품 정보 조회에 실패한 경우
-            log.error("상품 정보 조회에 실패했습니다.");
-            throw new RuntimeException("상품 정보 조회에 실패했습니다");
-        }
-    }
+//    @Transactional
+//    public String decreaseQuantity(QuantityDTO quantityDTO) {
+//        Quantity quantity = quantityRepository.findByIdForUpdate(quantityDTO.getProductId());
+//
+//        if (quantity != null) {
+//            long availableQuantity = quantity.getQuantity();
+//            if (availableQuantity < quantityDTO.getQuantity()) {
+//                log.info("상품의 재고가 부족합니다: {}", availableQuantity);
+//                return "상품 재고가 부족합니다";
+//            }
+//
+//            quantity.setQuantity(availableQuantity - quantityDTO.getQuantity());
+//            quantityRepository.save(quantity);
+//
+//            log.info("차감된 재고: {}", quantity.getQuantity());
+//            return "OK";
+//        } else {
+//            log.error("상품 정보 조회에 실패했습니다.");
+//            throw new RuntimeException("상품 정보 조회에 실패했습니다");
+//        }
+//    }
+
 
 //    @Transactional
 //    // 3. 결제 진행 메소드

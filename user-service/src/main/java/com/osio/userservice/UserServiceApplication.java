@@ -7,12 +7,13 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 //import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 // 비동기 방식을 위한 어노테이션 (이메일 인증에서 사용)
 @EnableAsync
-//@EnableDiscoveryClient
+@EnableDiscoveryClient
 @SpringBootApplication
 public class UserServiceApplication {
 

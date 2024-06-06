@@ -21,29 +21,14 @@ public class RollBackConsumer {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-//    // 0. 재고 확인 및 감소
-//    @KafkaListener(topics = "check-quantity", groupId = "group-01")
-//    public void checkQuantity(String kafkaMessage) throws JsonProcessingException {
-//        log.info("Check quantity: {}", kafkaMessage);
-//
-//        QuantityDTO quantityDTO = objectMapper.readValue(kafkaMessage, QuantityDTO.class);
-//
-//        // 1. 재고 확인 및 감소
-//        ResponseEntity<String> decreaseResponse = quantityServiceImpl.decreaseQuantity(quantityDTO.getProductId(), quantityDTO.getQuantity());
-//
-//        if (decreaseResponse.getStatusCode() == HttpStatus.OK) {
-//            // 2. 주문 생성
-//            quantityServiceImpl.createOrder(quantityDTO);
-//
-//        } else {
-//            log.error(decreaseResponse.getBody());
-//        }
-////        } catch (Exception e) {
-////            log.error(e.getMessage());
-////            kafkaTemplate.send("check-quantity-response", objectMapper.writeValueAsString(decreaseResponse));
-////        }
-//
-//    }
+    // 0. 재고 확인 및 감소
+    @KafkaListener(topics = "check-quantity", groupId = "group-01")
+    public void checkQuantity(String kafkaMessage) throws JsonProcessingException {
+        log.info("Check quantity: {}", kafkaMessage);
+
+        QuantityDTO quantityDTO = objectMapper.readValue(kafkaMessage, QuantityDTO.class);
+        String decreaseResponse = String.valueOf(quantityServiceImpl.decreaseQuantity(quantityDTO));
+    }
 
     @KafkaListener(topics = "roll-back-quantity", groupId = "group-01")
     public void rollBackQuantity(String kafkaMessage) throws JsonProcessingException {

@@ -2,7 +2,6 @@ package com.osio.quantityservice.kafka.consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.osio.quantityservice.dto.QuantityDTO;
 import com.osio.quantityservice.dto.QuantityUpdateDTO;
 import com.osio.quantityservice.kafka.producer.OrderProducer;
 import com.osio.quantityservice.service.QuantityServiceImpl;
@@ -34,7 +33,4 @@ public class  ProductConsumer {
             orderProducer.rollbackProduct(quantityUpdateDTO);
         }
     }
-
-
-
 }
