@@ -31,7 +31,6 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final OrderProductRepository orderProductRepository;
     private final ProductFeignClient productFeignClient;
-    private final QuantityFeignClient quantityFeignClient;
     private final QuantityProducer quantityProducer;
 
     // 주문 조회
@@ -157,11 +156,8 @@ public class OrderServiceImpl implements OrderService {
                 .build();
 
         try {
-            String quantityResponse = quantityFeignClient.decreaseQuantity(quantityDTO);
+            quantityProducer.checkQuantity(quantityDTO);
 
-            if (!"OK".equals(quantityResponse)) {
-                return ResponseEntity.ok(quantityResponse);
-            }
 
             // 현재 날짜와 시간을 가져옵니다.
             LocalDateTime now = LocalDateTime.now();

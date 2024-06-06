@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.*;
 public class QuantityFeignController {
     private final QuantityService quantityService;
 
-    @PostMapping("/feign")
-    public String decreaseQuantity(@RequestBody QuantityDTO quantityDTO) {
-        return quantityService.decreaseQuantity(quantityDTO);
-    }
+//    @PostMapping("/feign")
+//    public String decreaseQuantity(@RequestBody QuantityDTO quantityDTO) {
+//        return quantityService.decreaseQuantity(quantityDTO);
+//    }
 }

@@ -1,11 +1,13 @@
 package com.osio.quantityservice.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class RedisService {
     private final RedisTemplate<String, String> redisTemplate;
 
@@ -15,6 +17,7 @@ public class RedisService {
     }
 
     public void setQuantity(Long productId, Long quantity) {
+        log.info("레디스 수량 추가 -> product id: {} quantity: {}", productId, quantity);
         redisTemplate.opsForValue().set(productId.toString(), quantity.toString());
     }
 
