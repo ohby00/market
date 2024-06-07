@@ -71,8 +71,8 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Product productFix(QuantityDTO quantityDTO) {
         Optional<Product> findProduct = productRepository.findById(quantityDTO.getProductId());
-        findProduct.ifPresent(product -> {
 
+        findProduct.ifPresent(product -> {
             QuantityUpdateDTO quantityUpdateDTO = QuantityUpdateDTO.builder()
                     .quantityId(quantityDTO.getProductId())
                     .quantity(quantityDTO.getQuantity())

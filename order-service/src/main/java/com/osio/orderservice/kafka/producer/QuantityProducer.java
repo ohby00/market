@@ -14,11 +14,19 @@ public class QuantityProducer {
     private final KafkaTemplate<String, String> kafkaTemplate;
 
     // 0. 재고 확인 및 감소
-    public void checkQuantity(QuantityDTO quantityDTO){
+    public void checkQuantityMysql(QuantityDTO quantityDTO){
         String json = quantityDTO.toJson();
-        log.info("checkQuantity QuantityProducer data : {}", json);
-        kafkaTemplate.send("check-quantity", json);
+        log.info("checkQuantityMysql QuantityProducer data : {}", json);
+        kafkaTemplate.send("check-quantity-Mysql", json);
     }
+
+    public void checkQuantityRedis(QuantityDTO quantityDTO){
+        String json = quantityDTO.toJson();
+        log.info("checkQuantityRedis QuantityProducer data : {}", json);
+        kafkaTemplate.send("check-quantity-Redis", json);
+    }
+
+
 
     // 1. createOrder 실패 시, 롤백
     public void rollBackQuantity(QuantityDTO quantityDTO){

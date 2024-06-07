@@ -14,10 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -39,14 +36,9 @@ public class QuantityServiceImpl implements QuantityService {
         this.orderProducer = orderProducer;
     }
 
-//    @Override
-//    public Long getProductQuantity(Long productId) {
-//       return redisService.getQuantity(productId);
-//    }
 
     @Override
-// 재고 차감
-    public ResponseEntity<String> decreaseQuantity(QuantityDTO quantityDTO) {
+    public ResponseEntity<String> decreaseQuantityRedis(QuantityDTO quantityDTO) {
         // Redisson을 사용하여 분산 락 획득
         RLock lock = redissonClient.getLock("product_lock:" + quantityDTO.getProductId());
         lock.lock(); // 락 획득
@@ -67,9 +59,7 @@ public class QuantityServiceImpl implements QuantityService {
                 log.info("상품 ID {}의 재고가 부족합니다", quantityDTO.getProductId());
                 return ResponseEntity.badRequest().body("상품 재고가 부족합니다");
             }
-
             ResponseEntity<String> updateResponse = redisService.decreaseQuantity(quantityDTO.getProductId(), quantityDTO.getQuantity());
-
             if (updateResponse.getStatusCode() == HttpStatus.OK) {
                 log.info("상품 ID {}의 차감된 재고: {}", quantityDTO.getProductId(), redisService.getQuantity(quantityDTO.getProductId()));
                 return ResponseEntity.ok("상품 재고가 성공적으로 차감되었습니다");
@@ -78,41 +68,34 @@ public class QuantityServiceImpl implements QuantityService {
                 log.error("상품 ID {}의 정보 업데이트에 실패했습니다.", quantityDTO.getProductId());
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("재고 차감 중 오류가 발생했습니다");
             }
-
         } finally {
             lock.unlock(); // 락 해제
         }
     }
 
 
-//    @Transactional
-//    public String decreaseQuantity(QuantityDTO quantityDTO) {
-//        Quantity quantity = quantityRepository.findByIdForUpdate(quantityDTO.getProductId());
-//
-//        if (quantity != null) {
-//            long availableQuantity = quantity.getQuantity();
-//            if (availableQuantity < quantityDTO.getQuantity()) {
-//                log.info("상품의 재고가 부족합니다: {}", availableQuantity);
-//                return "상품 재고가 부족합니다";
-//            }
-//
-//            quantity.setQuantity(availableQuantity - quantityDTO.getQuantity());
-//            quantityRepository.save(quantity);
-//
-//            log.info("차감된 재고: {}", quantity.getQuantity());
-//            return "OK";
-//        } else {
-//            log.error("상품 정보 조회에 실패했습니다.");
-//            throw new RuntimeException("상품 정보 조회에 실패했습니다");
-//        }
-//    }
+    @Override
+    public ResponseEntity<String> decreaseQuantityMysql(QuantityDTO quantityDTO) {
+        Quantity quantity = quantityRepository.findByIdForUpdate(quantityDTO.getProductId());
 
+        if (quantity != null) {
+            long availableQuantity = quantity.getQuantity();
+            if (availableQuantity < quantityDTO.getQuantity()) {
+                log.info("상품의 재고가 부족합니다: {}", availableQuantity);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("상품 재고가 부족합니다");
+            }
 
-//    @Transactional
-//    // 3. 결제 진행 메소드
-//    public void payment(QuantityDTO quantityDTO) {
-//        orderProducer.payment(quantityDTO);
-//    }
+            quantity.setQuantity(availableQuantity - quantityDTO.getQuantity());
+            quantityRepository.save(quantity);
+
+            log.info("차감된 재고: {}", quantity.getQuantity());
+            return ResponseEntity.status(HttpStatus.OK).body("ok");
+        } else {
+            log.error("상품 정보 조회에 실패했습니다.");
+            throw new RuntimeException("상품 정보 조회에 실패했습니다");
+        }
+    }
+
 
     // 1. createOrder
     public void createOrder(QuantityDTO quantityDTO) {
@@ -136,6 +119,7 @@ public class QuantityServiceImpl implements QuantityService {
         log.info("재고 복구 및 주문 제거 성공");
     }
 
+
     public void updateQuantity(QuantityUpdateDTO quantityUpdateDTO) {
         // Update Quantity DB
         Quantity quantity = quantityRepository.findById(quantityUpdateDTO.getQuantityId()).orElse(null);
@@ -151,12 +135,14 @@ public class QuantityServiceImpl implements QuantityService {
             redisService.setQuantity(newQuantity.getQuantityId(), newQuantity.getQuantity());
 
         } else {
-            quantity.updateQuantity(quantity.getQuantity());
+            quantity.setQuantity(quantityUpdateDTO.getQuantity()); // 이 부분 수정
+
+            quantityRepository.save(quantity); // 엔티티를 저장해야 변경사항이 데이터베이스에 반영됩니다.
 
             redisService.setQuantity(quantity.getQuantityId(), quantity.getQuantity());
         }
-
     }
+
 
     public void rollBackQuantity(QuantityUpdateDTO quantityUpdateDTO) {
         // 둘다 삭제
@@ -164,12 +150,12 @@ public class QuantityServiceImpl implements QuantityService {
         redisService.deleteQuantity(quantityUpdateDTO.getQuantityId());
     }
 
-//    @Transactional
-//    // 재고 DB 저장 - schedule
-//    public void updateQuantity() {
-//        List<Quantity> quantityList = quantityRepository.findAll();
-//        for (Quantity quantity : quantityList) {
-//            quantity.updateQuantity(redisService.getQuantity(quantity.getQuantityId()));
-//        }
-//    }
+    @Transactional
+    // 재고 DB 저장 - schedule
+    public void updateQuantity() {
+        List<Quantity> quantityList = quantityRepository.findAll();
+        for (Quantity quantity : quantityList) {
+            quantity.updateQuantity(redisService.getQuantity(quantity.getQuantityId()));
+        }
+    }
 }

@@ -42,13 +42,23 @@ public class OrderController {
         }
     }
 
-    @PostMapping("/create/{productId}")
-    public ResponseEntity<String> addOrder(
+    @PostMapping("/create/mysql/{productId}")
+    public ResponseEntity<String> addOrderMysql(
             @RequestHeader("userId") Long userId,
             @RequestBody OrderProductQuantityDTO orderProductQuantity,
             @PathVariable("productId") Long productId) {
 
-        ResponseEntity<String> response = orderServiceImpl.createOrder(userId, orderProductQuantity, productId);
+        ResponseEntity<String> response = orderServiceImpl.createOrderMysql(userId, orderProductQuantity, productId);
+        return ResponseEntity.ok(response.getBody());
+    }
+
+    @PostMapping("/create/redis/{productId}")
+    public ResponseEntity<String> addOrderRedis(
+            @RequestHeader("userId") Long userId,
+            @RequestBody OrderProductQuantityDTO orderProductQuantity,
+            @PathVariable("productId") Long productId) {
+
+        ResponseEntity<String> response = orderServiceImpl.createOrderRedis(userId, orderProductQuantity, productId);
         return ResponseEntity.ok(response.getBody());
     }
 

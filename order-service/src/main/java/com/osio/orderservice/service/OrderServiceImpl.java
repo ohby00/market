@@ -138,8 +138,8 @@ public class OrderServiceImpl implements OrderService {
 
     // 주문 추가 (장바구니 상품이 아닌 상품 직접 구매)
     @Transactional
-    public ResponseEntity<String> createOrder(Long userId, OrderProductQuantityDTO orderProductQuantity, Long productId) {
-        log.info("createOrder(단일 주문) -> userId={}, Quantity={}, productId={}",
+    public ResponseEntity<String> createOrderMysql(Long userId, OrderProductQuantityDTO orderProductQuantity, Long productId) {
+        log.info("createOrderMysql(단일 주문) -> userId={}, Quantity={}, productId={}",
                 userId, orderProductQuantity.getOrderProductQuantity(), productId);
 
         // productId로 상품 찾기
@@ -156,7 +156,7 @@ public class OrderServiceImpl implements OrderService {
                 .build();
 
         try {
-            quantityProducer.checkQuantity(quantityDTO);
+            quantityProducer.checkQuantityMysql(quantityDTO);
 
 
             // 현재 날짜와 시간을 가져옵니다.
@@ -198,6 +198,57 @@ public class OrderServiceImpl implements OrderService {
     }
 
 
+    // 주문 추가 (장바구니 상품이 아닌 상품 직접 구매)
+    @Transactional
+    public ResponseEntity<String> createOrderRedis(Long userId, OrderProductQuantityDTO orderProductQuantity, Long productId) {
+        log.info("createOrderRedis(단일 주문) -> userId={}, Quantity={}, productId={}",
+                userId, orderProductQuantity.getOrderProductQuantity(), productId);
+
+        // productId로 상품 찾기
+        ProductDTO product = productFeignClient.getProductById(productId).getBody();
+        if (product == null) {
+            return ResponseEntity.ok("상품을 찾을 수 없습니다.");
+        }
+
+        QuantityDTO quantityDTO = QuantityDTO.builder()
+                .userId(userId)
+                .productId(productId)
+                .productPrice(product.getProductPrice())
+                .quantity(orderProductQuantity.getOrderProductQuantity())
+                .build();
+
+            quantityProducer.checkQuantityRedis(quantityDTO);
+
+
+            // 현재 날짜와 시간을 가져옵니다.
+            LocalDateTime now = LocalDateTime.now();
+
+            // LocalDateTime 객체를 Timestamp 객체로 변환합니다.
+            Timestamp orderDate = Timestamp.valueOf(now);
+
+            // 주문 생성
+            Orders order = Orders.builder()
+                    .userId(userId)
+                    .productId(productId)
+                    .orderTotalPrice(product.getProductPrice() * orderProductQuantity.getOrderProductQuantity()) // 주문 총 가격 설정
+                    .orderDate(orderDate)
+                    .status(Status.PENDING) // 결제 대기 중 상태로 설정
+                    .build();
+
+            // 주문 상품 생성
+            OrderProducts orderProduct = OrderProducts.builder()
+                    .userId(userId)
+                    .productId(productId)
+                    .orderProductQuantity(orderProductQuantity.getOrderProductQuantity())
+                    .orderProductPrice(product.getProductPrice() * orderProductQuantity.getOrderProductQuantity())
+                    .orders(order)
+                    .build();
+
+            // 주문 저장
+            orderRepository.save(order);
+            orderProductRepository.save(orderProduct);
+            return ResponseEntity.ok("주문이 성공적으로 생성되었습니다.");
+        }
 
     // 결제 진입
     @Transactional
