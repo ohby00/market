@@ -18,7 +18,7 @@ public class ScheduleConfig {
         this.quantityService = quantityService;
     }
 
-    @Scheduled(fixedRate = 6 * 60 * 60 * 1000)
+    @Scheduled(fixedRate = 3 * 60 * 1000)
     public void scheduled() {
         quantityService.updateQuantity();
         log.info("Quantity updated");

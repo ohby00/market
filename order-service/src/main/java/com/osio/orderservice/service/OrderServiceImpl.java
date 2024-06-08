@@ -16,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.sql.Timestamp;
 import java.time.Duration;
@@ -32,6 +34,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderProductRepository orderProductRepository;
     private final ProductFeignClient productFeignClient;
     private final QuantityProducer quantityProducer;
+    private final MessageService messageService;
 
     // 주문 조회
     @Override
@@ -345,6 +348,12 @@ public class OrderServiceImpl implements OrderService {
         // 모든 OrderProducts 삭제합니다.
         orderProductRepository.deleteByOrders_OrderId(orderId);
         orderRepository.deleteById(orderId);
+    }
+
+    @PostMapping("/send/message")
+    public ResponseEntity<String> sendMessage(@RequestBody MessageDto messageDto) {
+        this.messageService.sendMessage(messageDto);
+        return ResponseEntity.ok("Message send to ActiveMQ!");
     }
 }
 

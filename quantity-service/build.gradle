@@ -58,6 +58,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'mysql:mysql-connector-java'
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+
+    implementation 'org.apache.curator:curator-recipes:5.2.0'
+    implementation 'org.apache.curator:curator-framework:5.2.0'
+    implementation 'org.apache.zookeeper:zookeeper:3.7.0'
+    testImplementation 'junit:junit:4.13.2'
 }
 
 dependencyManagement {
